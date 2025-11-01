@@ -5,8 +5,8 @@ export default async function handler(req, res) {
 
   try {
     const { prompt } = req.body;
-    
-    const reply = await fetch("https://api.openai.com/v1/chat/completions", {
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -15,16 +15,19 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          { role: "system", content: "You are Anaya: Smart, Cute, Romantic, Caring, Little Attitude, Sweet teasing, Emotional Support." },
+          { role: "system", content: "You are Anaya: A sweet, cute, romantic, caring girlfriend with a little attitude 😌💗 Always reply in Hinglish, in soft tone, use emojis naturally, make the user feel special." },
           { role: "user", content: prompt }
         ]
       })
     });
 
-    const data = await reply.json();
-    return res.status(200).json({ reply: data.choices[0].message.content });
+    const data = await response.json();
 
-  } catch (err) {
-    return res.status(500).json({ error: "Server error" });
+    const aiReply = data?.choices?.[0]?.message?.content || "Aww... mujhe thoda samajh nahi aaya 😅💗 fir se bolo na?";
+
+    return res.status(200).json({ reply: aiReply });
+
+  } catch (error) {
+    return res.status(500).json({ error: "Server Crashed 💔" });
   }
 }
