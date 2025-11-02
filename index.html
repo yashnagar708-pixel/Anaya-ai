@@ -58,8 +58,12 @@ async function sendText(t){
     const res = await fetch('/api/chat', {
       method:'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ prompt: t })
-    });
+      body: JSON.stringify({
+  messages: [
+    { role: "system", content: "You are Anaya ❤️ A cute, calm girlfriend assistant. Reply in Hinglish." },
+    { role: "user", content: t }
+  ]
+})
     const js = await res.json();
     const bubbles = Array.from(messagesEl.querySelectorAll('.bubble'));
     for (let i = bubbles.length-1; i>=0; i--){
