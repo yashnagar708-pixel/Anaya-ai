@@ -1,35 +1,24 @@
 import OpenAI from "openai";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const { prompt } = req.body || {};
-  if (!prompt) {
-    return res.status(400).json({ error: "No prompt provided" });
-  }
-
+export async function POST(req) {
   try {
-    const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
+    const { messages } = await req.json();
 
-    const systemMessage = `You are Anaya ❤️ A cute, calm, teasing girlfriend-style assistant. Reply in Hinglish with love & slight attitude.`;
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: prompt }
-      ]
+      messages: messages,
     });
 
-    const text = completion.choices[0].message.content;
-    return res.status(200).json({ reply: text });
-
+    return new Response(
+      JSON.stringify({ reply: completion.choices[0].message.content }),
+      { status: 200 }
+    );
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ reply: "Server error 😔" });
+    console.error("Server Error:", error);
+    return new Response(JSON.stringify({ error: "Server Error" }), { status: 500 });
   }
 }
