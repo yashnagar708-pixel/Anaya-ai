@@ -8,7 +8,7 @@
     body{margin:0;background:#060606;color:#fff;font-family:Inter,system-ui;display:flex;align-items:center;justify-content:center;height:100vh}
     .card{width:100%;max-width:720px;background:linear-gradient(180deg,#0b0b0b 0%, #070707 100%);border-radius:14px;padding:18px;box-shadow:0 10px 40px rgba(150,50,200,0.08)}
     .messages{height:48vh;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
-    .bubble{max-width:78%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.03);color:#eaeaea}
+    .bubble{max-width:78%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);color:#eaeaea}
     .user{align-self:flex-end;background:linear-gradient(90deg,#7c3aed,#ec4899);color:black}
     footer{display:flex;gap:8px;margin-top:12px}
     input{flex:1;padding:10px;border-radius:10px;border:1px solid #222;background:transparent;color:#fff}
@@ -59,20 +59,22 @@ async function sendText(t){
       method:'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-  messages: [
-    { role: "system", content: "You are Anaya ❤️ A cute, calm girlfriend assistant. Reply in Hinglish." },
-    { role: "user", content: t }
-  ]
-})
-    const js = await res.json();
+        messages: [
+          { role: "system", content: "You are Anaya ❤️ A cute girlfriend-type AI. Reply in soft Hinglish, affectionate, caring, cute, slightly flirty." },
+          { role: "user", content: t }
+        ]
+      })
+    });
+
+    const data = await res.json();
     const bubbles = Array.from(messagesEl.querySelectorAll('.bubble'));
     for (let i = bubbles.length-1; i>=0; i--){
       if (bubbles[i].innerText === 'Thinking...'){
-        bubbles[i].innerText = js.reply;
+        bubbles[i].innerText = data.reply;
         break;
       }
     }
-    speak(js.reply);
+    speak(data.reply);
   }catch(e){
     addMsg('Connection error.','assistant');
   }
@@ -81,9 +83,14 @@ async function sendText(t){
 sendBtn.onclick = ()=> sendText(inputEl.value || '');
 inputEl.addEventListener('keydown', e => { if(e.key==='Enter') sendText(inputEl.value); });
 
-let rec=null; try {
+let rec=null; 
+try {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (SR) { rec = new SR(); rec.lang='en-IN'; rec.onresult = e => { inputEl.value = e.results[0][0].transcript; sendText(inputEl.value); } }
+  if (SR) { 
+    rec = new SR(); 
+    rec.lang='en-IN'; 
+    rec.onresult = e => { inputEl.value = e.results[0][0].transcript; sendText(inputEl.value); } 
+  }
 } catch(e){}
 
 micBtn.onclick = ()=> { if(rec){ rec.start(); } };
@@ -91,9 +98,8 @@ micBtn.onclick = ()=> { if(rec){ rec.start(); } };
 function speak(text){
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-IN';
-  const v = window.speechSynthesis.getVoices().find(x => /female|girl|google uk english female/i.test(x.name));
-  if(v) u.voice = v;
-  window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
 }
 </script>
 </body>
