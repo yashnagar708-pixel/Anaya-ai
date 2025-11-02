@@ -1,33 +1,33 @@
+import OpenAI from "openai";
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  });
 
-  try {
-    const { prompt } = req.body;
+  let body = "";
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
+  req.on("data", chunk => body += chunk);
+  req.on("end", async () => {
+    const { prompt } = JSON.parse(body || "{}");
+
+    const systemMessage = `You are Anaya ❤️ A cute, flirty, sweet, girlfriend-like AI. Reply in Hinglish, romantic, caring, supportive tone. Also use little teasing 😌`;
+
+    try {
+      const completion = await client.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          { role: "system", content: "You are Anaya: A sweet, cute, romantic, caring girlfriend with a little attitude 😌💗 Always reply in Hinglish, in soft tone, use emojis naturally, make the user feel special." },
+          { role: "system", content: systemMessage },
           { role: "user", content: prompt }
         ]
-      })
-    });
+      });
 
-    const data = await response.json();
-
-    const aiReply = data?.choices?.[0]?.message?.content || "Aww... mujhe thoda samajh nahi aaya 😅💗 fir se bolo na?";
-
-    return res.status(200).json({ reply: aiReply });
-
-  } catch (error) {
-    return res.status(500).json({ error: "Server Crashed 💔" });
-  }
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ reply: completion.choices[0].message.content }));
+    } catch(e) {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ reply: "Connection issue 😔" }));
+    }
+  });
 }
